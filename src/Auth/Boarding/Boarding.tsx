@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef} from "react";
 import {View, StyleSheet, Dimensions, ScrollView} from "react-native";
 import Slide, { SLIDE_HEIGHT } from "./Slide";
 import {interpolateColor, onScrollEvent, useValue} from "react-native-redash";
@@ -14,7 +14,6 @@ const styles = StyleSheet.create({
     },
     slider: {
         height: SLIDE_HEIGHT,
-        backgroundColor: 'cyan',
         borderBottomRightRadius: 75,
     },
     footer: {
@@ -58,10 +57,12 @@ const Boarding = () => {
         inputRange: slides.map((_, i) => i * width ),
         outputRange: slides.map((slide) => slide.color )
     });
+    const scroll = useRef<Animated.ScrollView>(null);
     return(
         <View style={styles.container}>
             <Animated.View style={[styles.slider, {backgroundColor}]}>
                 <Animated.ScrollView
+                    ref={scroll}
                     horizontal
                     snapToInterval={width}
                     decelerationRate="fast"
@@ -86,7 +87,16 @@ const Boarding = () => {
                         transform: [{ translateX: multiply(x, -1) }],
                     }]}>
                     {slides.map(({subtitle, description}, index) => (
-                        <Subslide {...{subtitle, description}} key={index} last={index === (slides.length - 1)} />
+                        <Subslide
+                            {...{subtitle, description}}
+                            key={index}
+                            last={index === (slides.length - 1)}
+                            onPress={() => {
+                                if (scroll.current){
+                                    scroll.current.getNode().scrollTo({ x: width * (index + 1), animated: true })
+                                }
+                            }}
+                        />
                     ))}
                 </Animated.View>
             </View>
